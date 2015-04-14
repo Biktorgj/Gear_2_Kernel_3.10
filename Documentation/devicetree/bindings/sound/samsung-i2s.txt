@@ -1,0 +1,60 @@
+* Samsung I2S controller
+
+Required SoC Specific Properties:
+
+- compatible : should be one of the following.
+   - samsung,s3c6410-i2s: for 8/16/24bit stereo I2S.
+   - samsung,s5pv210-i2s: for 8/16/24bit multichannel(5.1) I2S with
+     secondary fifo, s/w reset control and internal mux for root clk src.
+
+- reg: physical base address of the controller and length of memory mapped
+  region.
+- interrupts: should contain I2S interrupt number.
+- dmas: list of DMA controller phandle and DMA request line ordered pairs.
+- dma-names: identifier string for each DMA request line in the dmas property.
+  These strings correspond 1:1 with the ordered pairs in dmas.
+
+Optional SoC Specific Properties:
+
+- samsung,idma-addr: Internal DMA register base address of the audio
+  sub system(used in secondary sound source).
+- samsung,no-muxpsr: IISMOD does not have RCLK clock source selection bit.
+
+Required Board Specific Properties:
+
+- gpios: The gpio specifier for data out,data in, LRCLK, CDCLK and SCLK
+  interface lines. The format of the gpio specifier depends on the gpio
+  controller.
+  The syntax of samsung gpio specifier is
+	<[phandle of the gpio controller node]
+	 [pin number within the gpio controller]
+	 [mux function]
+	 [flags and pull up/down]
+	 [drive strength]>
+
+Example:
+
+- SoC Specific Portion:
+
+i2s@03830000 {
+	compatible = "samsung,s5pv210-i2s";
+	reg = <0x03830000 0x100>;
+	interrupts = <0 97 0>;
+	dmas = <&pdma0 10
+		&pdma0 9
+		&pdma0 8>;
+	dma-names = "tx", "rx", "tx-sec";
+	samsung,idma-addr = <0x03000000>;
+};
+
+- Board Specific Portion:
+
+i2s@03830000 {
+	gpios = <&gpz 0 2 0 0>, /* I2S_0_SCLK */
+		<&gpz 1 2 0 0>, /* I2S_0_CDCLK */
+		<&gpz 2 2 0 0>, /* I2S_0_LRCK */
+		<&gpz 3 2 0 0>, /* I2S_0_SDI */
+		<&gpz 4 2 0 0>, /* I2S_0_SDO[1] */
+		<&gpz 5 2 0 0>, /* I2S_0_SDO[2] */
+		<&gpz 6 2 0 0>; /* I2S_0_SDO[3] */
+};
